@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+ mailhog:
+  image: mailhog/mailhog:v1.0.1
+  ports:
+   - $MAILHOG_SMTP_PORT:1025
+   - $MAILHOG_UI_PORT:8025
+  networks: 
+   - bidderapp
+ app:
+  image: $APP_IMAGE
+  build:
+   context: .
+   dockerfile: ./Dockerfiles/app.Dockerfile
+   args:
+    UID: $UID
+  volumes:
+   - $APP_VOLUMES_SRC:/var/www/html/
+   - ./vols/app/docker-user-home/:/home/www-data/
+  env_file:
+   - ./env/app.env
+  ports: 
+    - 8000:8000
+  networks: 
+   - bidderapp
+  
+networks:
+ bidderapp:
+  driver: bridge
+  ipam:
+   config:
+    - subnet: 172.240.1.0/24
+#  static:
+#   image: nginx:1.19.6-alpine
+#   volumes:
+#    - $STATIC_VOLUMES_PUBLIC:/usr/share/nginx/html/
+#  proxy:
+#   image: $PROXY_IMAGE
+#   build:
+#    context: .
+#    dockerfile: ./Dockerfiles/proxy.Dockerfile
+#   ports:
+#    - $PROXY_PORT:80
+#   env_file:
+#     - ./env/proxy.env
